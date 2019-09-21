@@ -6,14 +6,21 @@ import blog_repository
 routes = web.RouteTableDef()
 
 
-@routes.get(r'/post')
+@routes.get(r'/posts')
 async def get_posts(request):
     pool = request.app['pool']
     async with pool.acquire() as connection:
-        # Open a transaction.
         async with connection.transaction():
-            # Run the query passing the request argument.
             result = await blog_repository.get_posts(connection)
+            return web.Response(text=str(result))
+
+
+@routes.get(r'/posts/{id}')
+async def get_post_by_id(request):
+    pool = request.app['pool']
+    async with pool.acquire() as connection:
+        async with connection.transaction():
+            result = await blog_repository.get_post_by_id(connection, int(request.match_info['id']))
             return web.Response(text=str(result))
 
 
