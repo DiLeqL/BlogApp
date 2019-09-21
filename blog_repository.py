@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 async def get_posts(con):
     posts = []
     async with con.transaction():
@@ -13,3 +16,40 @@ async def get_post_by_id(con, post_id):
         post = await stmt.fetchrow(post_id)
         return dict(post)
 
+
+async def get_author_id_by_name(con, name):
+    async with con.transaction():
+        stmt = await con.prepare('SELECT id FROM author  where name = $1')
+        author_id = await stmt.fetchrow(name)
+        if not author_id:
+            stmt = await con.prepare('INSERT INTO author (name) VALUES($1) '
+                                     'returning id')
+            author_id = await stmt.fetchval(name)
+            return author_id
+        else:
+            return author_id
+
+
+async def add_post(con, post_json, author_id):
+    async with con.transaction():
+        stmt = await con.prepare('INSERT INTO blog (title, body, author_id, created_at) VALUES($1, $2, $3, $4) '
+                                 'RETURNING id')
+        post_id = await stmt.fetchval(post_json['title'],
+                                      post_json['body'],
+                                      author_id,
+                                      datetime.strptime(post_json['created_at'], '%Y-%m-%dT%H:%M:%SZ'))
+        post_json['id'] = post_id
+        return post_json
+
+
+async def update_post(con, post_json, author_id):
+    async with con.transaction():
+        stmt = await con.prepare('UPDATE blog SET title=$1, body=$2, author_id=$3,'
+                                 ' created_at=$4 WHERE id=$5 RETURNING id')
+        post_id = await stmt.fetchval(post_json['title'],
+                                      post_json['body'],
+                                      author_id,
+                                      datetime.strptime(post_json['created_at'], '%Y-%m-%dT%H:%M:%SZ'),
+                                      int(post_json['id']))
+        post_json['id'] = post_id
+        return post_json

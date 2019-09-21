@@ -2,6 +2,7 @@ from aiohttp import web
 import asyncpg
 import asyncio
 import blog_repository
+import ast
 
 routes = web.RouteTableDef()
 
@@ -24,11 +25,37 @@ async def get_post_by_id(request):
             return web.Response(text=str(result))
 
 
+@routes.post(r'/posts')
+async def add_post(request):
+    pool = request.app['pool']
+    async with pool.acquire() as connection:
+        async with connection.transaction():
+            content = await request.content.read()
+            request_body = ast.literal_eval(str(content, 'UTF-8'))
+            author_id = await blog_repository.get_author_id_by_name(connection, request_body['author'])
+            post_json = await blog_repository.add_post(connection, request_body, author_id)
+            return web.Response(text=str(post_json))
+
+
+@routes.put(r'/posts/{id}')
+async def get_post_by_id(request):
+    pool = request.app['pool']
+    async with pool.acquire() as connection:
+        async with connection.transaction():
+            content = await request.content.read()
+            request_body = ast.literal_eval(str(content, 'UTF-8'))
+            request_body['id'] = request.match_info['id']
+            author_id = await blog_repository.get_author_id_by_name(connection, request_body['author'])
+            result = await blog_repository.update_post(connection, request_body, author_id)
+            return web.Response(text=str(result))
+
+
 async def init_app():
     app = web.Application()
     app['pool'] = await asyncpg.create_pool('postgresql://admin:postgres@localhost/blog_db')
     app.add_routes(routes)
     return app
+
 
 loop = asyncio.get_event_loop()
 application = loop.run_until_complete(init_app())
