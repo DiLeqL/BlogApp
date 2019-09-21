@@ -3,6 +3,7 @@ import asyncpg
 import asyncio
 import blog_repository
 import ast
+import validation
 
 routes = web.RouteTableDef()
 
@@ -27,6 +28,10 @@ async def get_post_by_id(request):
 
 @routes.post(r'/posts')
 async def add_post(request):
+
+    if not await validation.validate_post_fields(request):
+        return web.Response(status=400, text='Некорректные данные')
+
     pool = request.app['pool']
     async with pool.acquire() as connection:
         async with connection.transaction():
@@ -38,7 +43,11 @@ async def add_post(request):
 
 
 @routes.put(r'/posts/{id}')
-async def get_post_by_id(request):
+async def update_post(request):
+
+    if not await validation.validate_post_fields(request):
+        return web.Response(status=400, text='Некорректные данные')
+
     pool = request.app['pool']
     async with pool.acquire() as connection:
         async with connection.transaction():
