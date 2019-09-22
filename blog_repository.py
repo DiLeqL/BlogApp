@@ -27,7 +27,7 @@ async def get_author_id_by_name(con, name):
             author_id = await stmt.fetchval(name)
             return author_id
         else:
-            return author_id
+            return author_id['id']
 
 
 async def add_post(con, post_json, author_id):
@@ -37,7 +37,7 @@ async def add_post(con, post_json, author_id):
         post_id = await stmt.fetchval(post_json['title'],
                                       post_json['body'],
                                       author_id,
-                                      datetime.strptime(post_json['created_at'], '%Y-%m-%dT%H:%M:%SZ'))
+                                      datetime.strptime(post_json['created_at'], '%Y-%m-%dT%H:%M:%S.%fZ'))
         post_json['id'] = post_id
         return post_json
 
@@ -49,7 +49,7 @@ async def update_post(con, post_json, author_id):
         post_id = await stmt.fetchval(post_json['title'],
                                       post_json['body'],
                                       author_id,
-                                      datetime.strptime(post_json['created_at'], '%Y-%m-%dT%H:%M:%SZ'),
+                                      datetime.strptime(post_json['created_at'], '%Y-%m-%dT%H:%M:%S.%fZ'),
                                       int(post_json['id']))
         post_json['id'] = post_id
         return post_json

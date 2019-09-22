@@ -2,8 +2,6 @@ import pytest
 from aiohttp import web
 import main
 import asyncpg
-import testing.postgresql
-import json
 
 
 # def setUp(self):
@@ -36,22 +34,19 @@ async def test_add_post(aiohttp_client):
     app['pool'] = await asyncpg.create_pool('postgresql://admin:postgres@localhost/blog_db')
     client = await aiohttp_client(app)
     post_info = '{"title": "Заголовок 7", "body": "Тело поста 7", "author": "Автор 7", "created_at": ' \
-                '"2019-09-22T15:40:14Z"} '
-    resp = await client.post(r'/posts', data=json.dumps(post_info))
-    print("damb = " + json.dumps(post_info))
-    print(json.loads(str(post_info)))
+                '"2019-09-22T15:40:14.341Z"}'
+    resp = await client.post(r'/posts', data=post_info)
     assert resp.status == 201
 
 
 async def test_update_post(aiohttp_client):
     app = web.Application()
-    app.add_routes([web.post('/posts/{id}', main.update_post)])
+    app.add_routes([web.put('/posts/{id}', main.update_post)])
     app['pool'] = await asyncpg.create_pool('postgresql://admin:postgres@localhost/blog_db')
     client = await aiohttp_client(app)
-    resp = await client.post(r'/posts/1', data={"title": "Заголовок 7",
-                                            "body": "Тело поста 7",
-                                                "author": "Автор 7",
-                                                "created_at": "2019-09-22T15:40:14Z"})
+    post_info = '{"title": "Заголовок 7", "body": "Тело поста 7", "author": "Автор 7", "created_at": ' \
+                '"2019-09-22T15:40:14.341Z"}'
+    resp = await client.put(r'/posts/1', data=post_info)
     assert resp.status == 200
 
 # def tearDown(self):
