@@ -5,15 +5,23 @@ async def get_posts(con):
     posts = []
     async with con.transaction():
         async for record in con.cursor(
-                'SELECT * FROM blog inner join author a on blog.author_id = a.id'):
-            posts.append(dict(record))
+                'SELECT blog.id, title, body, a.name, created_at '
+                'FROM blog inner join author a on blog.author_id = a.id'):
+            post = dict(record)
+            post['created_at'] = str(post['created_at'].strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4]) + 'Z'
+            posts.append(post)
     return posts
 
 
 async def get_post_by_id(con, post_id):
     async with con.transaction():
-        stmt = await con.prepare('SELECT * FROM blog inner join author a on blog.author_id = a.id where blog.id = $1')
-        post = await stmt.fetchrow(post_id)
+        stmt = await con.prepare('SELECT blog.id, title,'
+                                 'body, a.name, created_at FROM blog inner join author a on blog.author_id = a.id '
+                                 'where blog.id = $1')
+        post_record = await stmt.fetchrow(post_id)
+        # reformat date
+        post = dict(post_record)
+        post['created_at'] = str(post['created_at'].strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4]) + 'Z'
         return dict(post)
 
 
