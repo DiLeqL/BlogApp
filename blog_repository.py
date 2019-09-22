@@ -20,9 +20,12 @@ async def get_post_by_id(con, post_id):
                                  'where blog.id = $1')
         post_record = await stmt.fetchrow(post_id)
         # reformat date
-        post = dict(post_record)
-        post['created_at'] = str(post['created_at'].strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4]) + 'Z'
-        return dict(post)
+        if post_record is not None:
+            post = dict(post_record)
+            post['created_at'] = str(post['created_at'].strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4]) + 'Z'
+            return dict(post)
+        else:
+            return None
 
 
 async def get_author_id_by_name(con, name):

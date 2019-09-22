@@ -27,13 +27,13 @@ async def test_get_post_by_id_200(aiohttp_client):
     assert resp.status == 200
 
 
-async def test_get_post_by_id_status_500(aiohttp_client):
+async def test_get_post_by_id_status_400(aiohttp_client):
     app = web.Application()
     app.add_routes([web.get('/posts/{id}', main.get_post_by_id)])
     app['pool'] = await asyncpg.create_pool('postgresql://admin:postgres@localhost/blog_db')
     client = await aiohttp_client(app)
     resp = await client.get(r'/posts/100')
-    assert resp.status == 500
+    assert resp.status == 400
 
 
 async def test_add_post_status_201(aiohttp_client):

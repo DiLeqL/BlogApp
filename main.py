@@ -23,8 +23,10 @@ async def get_post_by_id(request):
     async with pool.acquire() as connection:
         async with connection.transaction():
             result = await blog_repository.get_post_by_id(connection, int(request.match_info['id']))
-            print(result)
-            return web.Response(text=str(result))
+            if result is not None:
+                return web.Response(text=str(result))
+            else:
+                return web.Response(status=400, text='Некорректные данные')
 
 
 @routes.post(r'/posts')
