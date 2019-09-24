@@ -1,6 +1,7 @@
 import pytest
 import main
 
+
 @pytest.fixture
 async def client_fixture(aiohttp_client):
     app = await main.get_app()
