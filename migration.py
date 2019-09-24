@@ -1,9 +1,10 @@
 import asyncio
 import asyncpg
+import sql_contract
 
 
 async def init_db():
-    conn = await asyncpg.connect('postgresql://admin:postgres@localhost/blog_db')
+    conn = await asyncpg.connect(sql_contract.CONNECTION_STRING)
 
     await conn.execute('''
                 CREATE TABLE author(

@@ -5,6 +5,7 @@ import blog_repository
 import ast
 import validation
 import json
+import sql_contract
 
 routes = web.RouteTableDef()
 
@@ -59,7 +60,7 @@ async def update_post(request):
 
 async def get_app():
     app = web.Application()
-    app['pool'] = await asyncpg.create_pool('postgresql://admin:postgres@localhost/blog_db')
+    app['pool'] = await asyncpg.create_pool(sql_contract.CONNECTION_STRING)
     app.add_routes(routes)
     return app
 
