@@ -57,7 +57,7 @@ async def update_post(request):
         return web.json_response(result, status=200)
 
 
-async def init_app():
+async def get_app():
     app = web.Application()
     app['pool'] = await asyncpg.create_pool('postgresql://admin:postgres@localhost/blog_db')
     app.add_routes(routes)
@@ -66,5 +66,5 @@ async def init_app():
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    application = loop.run_until_complete(init_app())
+    application = loop.run_until_complete(get_app())
     web.run_app(application)
